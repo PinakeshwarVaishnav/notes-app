@@ -14,6 +14,10 @@ const App = () => {
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
 
+  const handleLogout = () => {
+    localStorage.removeItem('loggedNoteappUser')
+  }
+
   const handleLogin = async (event) => {
     event.preventDefault()
 
@@ -21,6 +25,11 @@ const App = () => {
       const user = await loginService.login({
         username, password
       })
+
+      window.localStorage.setItem(
+        'loggedNoteappUser', JSON.stringify(user)
+      )
+
       noteService.setToken(user.token)
       setUser(user)
       setUsername('')
@@ -38,6 +47,16 @@ const App = () => {
       setNotes(initialNotes);
     });
   }, []);
+
+  useEffect(() => {
+    const loggedUserJSON =
+      window.localStorage.getItem('loggedNoteappUser')
+    if (loggedUserJSON) {
+      const user = JSON.parse(loggedUserJSON)
+      setUser(user)
+      noteService.setToken(user.token)
+    }
+  }, [])
 
   const addNote = (event) => {
     event.preventDefault();
@@ -111,6 +130,14 @@ const App = () => {
     </form>
   )
 
+  const LogoutButton = () => {
+    return (
+      <button onClick={handleLogout}>
+        Logout
+      </button>
+    )
+  }
+
   return (
     <div>
       <h1>Notes</h1>
@@ -141,6 +168,7 @@ const App = () => {
         <input value={newNote} onChange={handleNoteChange} />
         <button type="submit">save</button>
       </form>
+      <LogoutButton />
       <Footer />
     </div>
   );
